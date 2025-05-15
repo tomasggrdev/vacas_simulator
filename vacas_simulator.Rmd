@@ -16,11 +16,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # las vacas
 
-#tienen un parto cada 13 meses
+#tienen un parto cada 15 meses
+periodo_parto_meses = 15
 #tienen el primer celo a los 15 meses
+meses_primer_celo = 15
+#timepo de gestacion de 9 meses
+meses_gestacion = 9
 #los tenerneros tienen un 50% de probabilidad de ser hembras o machos
 #tasa de mortalidad de los partos 5%
-#se venden a los 88 meses cuando ya han dado 8 partos
+tasa_mortalidad_parto = 0.05
+
+#ventas
+#las vacas se venden a los 88 meses cuando ya han dado 8 partos
+meses_venta_vaca = 88
+#los novillos se venden a los 20 meses cuando ya tienen un peso optimo
+meses_venta_novillo = 20
 
 #establo
 
@@ -29,39 +39,41 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #comida
 
-# ternera 0-6 meses -> 6 litros de leche
+# terneros 0-6 meses -> 6 litros de leche
+terneros_leche_x_mes = 6*30
 # novilla 6-24 meses -> 12kg
+novilla_comida_x_mes = 12*30
 # vaca 24 meses en adelante -> 14kg
-#ternero 0-6 meses -> 6 litros de leche
-#toro joven 6-24 meses -> 20kg
+vaca_comida_x_mes = 15*30
+#novillo 6-24 meses -> 20kg
+novillo_comida_x_mes = 20*30
 
-#gases de efecto invernadero
 
-# ternera 0-6 meses ->
-# novilla 6-24 meses -> 
-# vaca 24 meses en adelante ->
-#ternero 0-6 meses -> 
-#toro joven 6-24 meses -> 
+
+#gases de efecto invernadero (metano)
+
+# terneros 0-6 meses 90 litros
+terneros_metano_x_mes = 90*30
+# novilla 6-24 meses 200 litros
+novilla_metano_x_mes = 200*30
+# vaca 24 meses en adelante 250 litros
+vaca_metano_x_mes = 250*30
+#novillo 6-24 meses 
+novillo_metano_mes = 230*30
 
 #Agua
 
 # ternera 0-6 meses -> 4 litros
+terneros_agua_x_mes = 4*30
 # novilla 6-24 meses -> 35 litros
+novilla_agua_x_mes = 35*30
 # vaca 24 meses en adelante -> 50 litros
-#ternero 0-6 meses -> 4 litros
-#toro joven 6-24 meses -> 50 listros
+vaca_agua_por_mes = 50*30
+#novillo 6-24 meses -> 50 listros
+novillo_agua_x_mes = 55*30
 
 
 #variables contadoras
-
-#leche_litros 
-#comida_kg
-#numero_terneras
-#numero_novillas
-#numero_vacas
-#numero_terneros
-#numero_toros_jovenes
-
 
 
 terneras = c()
@@ -80,9 +92,28 @@ tasa_mortalidad_natal = 0.05
 probabilidad_sexo = 0.5
 
 
+#output variables
+output_total = c()
+output_terneras = c()
+output_novillas = c()
+output_vacas = c()
+output_terneros = c()
+output_novillos = c()
+
+output_vacas_vendidas = c()
+output_novillos_vendidos = c()
+
+output_leche = c()
+output_agua = c()
+output_comida = c()
+output_metano = c()
+
+
 month = 0
 
 repeat {
+  
+  
   
   #sumamos el mes correspondiente a los animales
   total = length(terneras) + length(novillas) + length(vacas) + length(terneros) + length(novillos)
@@ -93,16 +124,24 @@ repeat {
   terneros = terneros + 1
   novillos = novillos + 1
   crias_por_nacer = crias_por_nacer - 1
-
+  
+  #consumo leche
+  leche_litros = terneros_leche_x_mes*(length(terneros) + length(terneras))
+  #consumo agua
+  agua_litros = terneros_agua_x_mes*(length(terneros) + length(terneras)) + novilla_agua_x_mes*length(novillas) + vaca_agua_por_mes*length(vacas) + novillo_agua_x_mes*length(novillos)
+  #consumo comida
+  comida_kg = novillo_comida_x_mes*length(novillos) + novilla_comida_x_mes*length(novillas) + vaca_comida_x_mes*length(vacas) 
+  #produccion de metano
+  metano_litros = terneros_metano_x_mes*(length(terneros) + length(terneras)) + novilla_metano_x_mes*length(novillas) + vaca_metano_x_mes*length(vacas) + novillo_metano_mes*length(novillos)
   
   
   #crias por nacer
-  nuevas_crias = length(novillas[novillas == 15]) + length(vacas[(vacas-15) %% 13 == 0])
+  nuevas_crias = length(novillas[novillas == meses_primer_celo]) + length(vacas[(vacas-meses_primer_celo) %% periodo_parto_meses == 0])
 
   
   while (nuevas_crias > 0) {
     nuevas_crias = nuevas_crias - 1
-    crias_por_nacer = c(crias_por_nacer, 9)
+    crias_por_nacer = c(crias_por_nacer, meses_gestacion)
    
   }
   
@@ -112,7 +151,7 @@ repeat {
   
   while(numero_de_partos > 0) {
     numero_de_partos = numero_de_partos - 1
-    if (runif(1) <= 0.05) {
+    if (runif(1) <= tasa_mortalidad_parto) {
       next
     }
     
@@ -152,20 +191,41 @@ repeat {
   }
   
   #venta novillos
-  novillos_a_vender = length(novillos[novillos == 20])
-  novillos = novillos[!(novillos == 20)]
+  novillos_a_vender = length(novillos[meses_venta_novillo])
+  novillos = novillos[!(novillos == meses_venta_novillo)]
   novillos_vendidos = novillos_vendidos + novillos_a_vender
   
   #venta vacas
-  vacas_a_vender = length(vacas[vacas == 88])
-  vacas = vacas[!(vacas ==88)]
+  vacas_a_vender = length(vacas[vacas == meses_venta_vaca])
+  vacas = vacas[!(vacas ==meses_venta_vaca)]
   vacas_vendidas = vacas_vendidas + vacas_a_vender
   
   month = month + 1
   
+  
+  output_total = c(output_total, total)
+  output_terneras = c(output_terneras, length(terneras))
+  output_novillas = c(output_novillas, length(novillas))
+  output_vacas = c(output_vacas, length(vacas))
+  output_terneros = c(output_terneros, length(terneros))
+  output_novillos = c(output_novillos, length(novillos))
+  
+  output_vacas_vendidas = c(output_vacas_vendidas, vacas_vendidas)
+  output_novillos_vendidos = c(output_novillos_vendidos, novillos_vendidos)
+  
+  output_leche = c(output_leche, leche_litros)
+  
+  output_agua = c(output_agua, agua_litros)
+  
+  output_comida = c(output_comida, comida_kg)
+  
+  output_metano = c(output_metano, metano_litros)
+  
   if(month == 200) {
     break;
   }
+  
+  
 }
 
 print(paste("meses", month))
@@ -178,14 +238,65 @@ print(paste("terneros ", length(terneros)))
 print(paste("novillos ", length(novillos)))
 print(paste("novillos vendidos: ", novillos_vendidos))
 
+all_cows = cbind(outout_total, output_terneras, output_novillas, output_vacas, output_terneros, output_novillos)
+
+types_cows = cbind(output_terneras, output_novillas, output_vacas, output_terneros, output_novillos)
+
+sell_cows = cbind(output_vacas_vendidas, output_novillos_vendidos)
+
+x = 1:months
+
+#all cows
+matplot(x, all_cows, type = "l", col = c("red", "blue", "green", "orange", "gray", "black"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "reses / meses")
+
+legend("topleft", legend = c("Total", "Terneras", "Novillas", "Vacas", "terneros", "novillos"),
+       col = c("red", "blue", "green", "orange", "gray", "black"), lty = 1, lwd = 1)
+
+#types cows
+matplot(x, types_cows, type = "l", col = c("blue", "green", "orange", "gray", "black"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "tipos de reses / meses")
+
+legend("topleft", legend = c("Terneras", "Novillas", "Vacas", "terneros", "novillos"),
+       col = c("blue", "green", "orange", "gray", "black"), lty = 1, lwd = 1)
+
+#selled cows
+
+matplot(x, sell_cows, type = "l", col = c("gray", "black"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "ventas / meses")
+
+legend("topleft", legend = c("Vacas", "novillos"),
+       col = c("gray", "black"), lty = 1, lwd = 1)
+
+#milk
+
+matplot(x, output_leche, type = "l", col = c("red"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "Consumo leche lt / meses")
+
+legend("topleft", legend = c("leche"),
+       col = c("red"), lty = 1, lwd = 1)
+
+#comida
+
+matplot(x, output_comida/1000, type = "l", col = c("green"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "Consumo comida toneladas / meses")
+
+legend("topleft", legend = c("comida"),
+       col = c("green"), lty = 1, lwd = 1)
+
+#water
+matplot(x, output_agua/1000, type = "l", col = c("blue"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "Consumo agua m3 / meses")
+
+legend("topleft", legend = c("agua"),
+       col = c("blue"), lty = 1, lwd = 1)
+
+#metano
+matplot(x, output_metano/1000, type = "l", col = c("brown"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "produccion metano m3 / meses")
+
+legend("topleft", legend = c("metano"),
+       col = c("brown"), lty = 1, lwd = 1)
+
+
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
