@@ -1,0 +1,191 @@
+---
+title: "entraga 2"
+author: "equipo 6"
+date: "2025-05-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#los toros
+
+# los toros de venden a los 20 meses
+
+# las vacas
+
+#tienen un parto cada 13 meses
+#tienen el primer celo a los 15 meses
+#los tenerneros tienen un 50% de probabilidad de ser hembras o machos
+#tasa de mortalidad de los partos 5%
+#se venden a los 88 meses cuando ya han dado 8 partos
+
+#establo
+
+#capacidad para 200 animales
+#cuando el stablo se llena se vende la vaca mas vieja
+
+#comida
+
+# ternera 0-6 meses -> 6 litros de leche
+# novilla 6-24 meses -> 12kg
+# vaca 24 meses en adelante -> 14kg
+#ternero 0-6 meses -> 6 litros de leche
+#toro joven 6-24 meses -> 20kg
+
+#gases de efecto invernadero
+
+# ternera 0-6 meses ->
+# novilla 6-24 meses -> 
+# vaca 24 meses en adelante ->
+#ternero 0-6 meses -> 
+#toro joven 6-24 meses -> 
+
+#Agua
+
+# ternera 0-6 meses -> 4 litros
+# novilla 6-24 meses -> 35 litros
+# vaca 24 meses en adelante -> 50 litros
+#ternero 0-6 meses -> 4 litros
+#toro joven 6-24 meses -> 50 listros
+
+
+#variables contadoras
+
+#leche_litros 
+#comida_kg
+#numero_terneras
+#numero_novillas
+#numero_vacas
+#numero_terneros
+#numero_toros_jovenes
+
+
+
+terneras = c()
+novillas = c(14)
+#iniciamos con 5 novillas preñadas de 15 meses
+vacas = c()
+vacas_vendidas = 0
+terneros = c()
+novillos = c()
+novillos_vendidos = 0
+crias_por_nacer = c()
+leche_litros = 0
+comida_kg = 0
+agua_litros = 0
+tasa_mortalidad_natal = 0.05
+probabilidad_sexo = 0.5
+
+
+month = 0
+
+repeat {
+  
+  #sumamos el mes correspondiente a los animales
+  total = length(terneras) + length(novillas) + length(vacas) + length(terneros) + length(novillos)
+  print(total)
+  terneras = terneros + 1
+  novillas = novillas + 1
+  vacas = vacas + 1
+  terneros = terneros + 1
+  novillos = novillos + 1
+  crias_por_nacer = crias_por_nacer - 1
+
+  
+  
+  #crias por nacer
+  nuevas_crias = length(novillas[novillas == 15]) + length(vacas[(vacas-15) %% 13 == 0])
+
+  
+  while (nuevas_crias > 0) {
+    nuevas_crias = nuevas_crias - 1
+    crias_por_nacer = c(crias_por_nacer, 9)
+   
+  }
+  
+  #partos
+  numero_de_partos = length(crias_por_nacer[crias_por_nacer == 0])
+  crias_por_nacer = crias_por_nacer[!(crias_por_nacer == 0)]
+  
+  while(numero_de_partos > 0) {
+    numero_de_partos = numero_de_partos - 1
+    if (runif(1) <= 0.05) {
+      next
+    }
+    
+    if (runif(1) <= 0.5) {
+      terneros = c(terneros, 0)
+    } else {
+      terneras = c(terneras, 0)
+    }
+    
+  }
+  
+  #ternero a novillo
+  nuevos_novillos = length(terneros[terneros == 6])
+  terneros = terneros[!(terneros == 6)]
+  
+  while (nuevos_novillos > 0) {
+    nuevos_novillos = nuevos_novillos - 1
+    novillos = c(novillos, 6)
+  }
+  
+  #ternera a novilla
+  nuevas_novillas = length(terneras[terneras == 6])
+  terneras = terneras[!(terneras == 6)]
+  
+  while (nuevas_novillas > 0) {
+    nuevas_novillas = nuevas_novillas - 1
+    novillas = c(novillas, 6)
+  }
+  
+  #novilla a vaca
+  nuevas_vacas = length(novillas[novillas == 24])
+  novillas = novillas[!(novillas == 24)]
+  
+  while (nuevas_vacas > 0) {
+    nuevas_vacas = nuevas_vacas - 1
+    vacas = c(vacas, 24)
+  }
+  
+  #venta novillos
+  novillos_a_vender = length(novillos[novillos == 20])
+  novillos = novillos[!(novillos == 20)]
+  novillos_vendidos = novillos_vendidos + novillos_a_vender
+  
+  #venta vacas
+  vacas_a_vender = length(vacas[vacas == 88])
+  vacas = vacas[!(vacas ==88)]
+  vacas_vendidas = vacas_vendidas + vacas_a_vender
+  
+  month = month + 1
+  
+  if(month == 200) {
+    break;
+  }
+}
+
+print(paste("meses", month))
+print(paste("total ", total))
+print(paste("terneras ", length(terneras)))
+print(paste("novillas ", length(novillas)))
+print(paste("vacas ", length(vacas)))
+print(paste("vacas vendidas: ", vacas_vendidas ))
+print(paste("terneros ", length(terneros)))
+print(paste("novillos ", length(novillos)))
+print(paste("novillos vendidos: ", novillos_vendidos))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
