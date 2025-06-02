@@ -34,7 +34,8 @@ meses_venta_novillo = 20
 
 #establo
 
-#capacidad para 200 animales
+#capacidad para 300 animales
+capacidad_esablo = 150
 #cuando el stablo se llena se vende la vaca mas vieja
 
 #comida
@@ -72,12 +73,20 @@ vaca_agua_por_mes = 50*30
 #novillo 6-24 meses -> 50 listros
 novillo_agua_x_mes = 55*30
 
+#Mortalidad por enfermedades (probabilidad mensual)
+mortalidad_ternero = 0.0088
+mortalidad_novillo = 0.0017
+mortalidad_ternera = 0.0043
+mortalidad_novilla = 0.0017
+mortalidad_vaca = 0.00083
+
+
 
 #variables contadoras
 
 
 terneras = c()
-novillas = c(14)
+novillas = c(14, 14, 14, 14, 14, 14, 14)
 #iniciamos con 5 novillas preñadas de 15 meses
 vacas = c()
 vacas_vendidas = 0
@@ -100,6 +109,13 @@ output_vacas = c()
 output_terneros = c()
 output_novillos = c()
 
+output_total_muertos = c()
+output_terneras_muertas = c()
+output_novillas_muertas = c()
+output_vacas_muertas = c()
+output_terneros_muertos = c()
+output_novillos_muertos = c()
+
 output_vacas_vendidas = c()
 output_novillos_vendidos = c()
 
@@ -110,6 +126,7 @@ output_metano = c()
 
 
 month = 0
+months = 200
 
 repeat {
   
@@ -117,7 +134,6 @@ repeat {
   
   #sumamos el mes correspondiente a los animales
   total = length(terneras) + length(novillas) + length(vacas) + length(terneros) + length(novillos)
-  print(total)
   terneras = terneros + 1
   novillas = novillas + 1
   vacas = vacas + 1
@@ -191,14 +207,69 @@ repeat {
   }
   
   #venta novillos
-  novillos_a_vender = length(novillos[meses_venta_novillo])
+  novillos_a_vender = length(novillos[novillos == meses_venta_novillo])
   novillos = novillos[!(novillos == meses_venta_novillo)]
   novillos_vendidos = novillos_vendidos + novillos_a_vender
   
   #venta vacas
   vacas_a_vender = length(vacas[vacas == meses_venta_vaca])
-  vacas = vacas[!(vacas ==meses_venta_vaca)]
-  vacas_vendidas = vacas_vendidas + vacas_a_vender
+  vacas = vacas[!(vacas == meses_venta_vaca)]
+  
+  vacas_a_vender_por_sobrecupo = 0
+  
+  if (capacidad_esablo < total) {
+    vacas_a_vender_por_sobrecupo = total - capacidad_esablo
+    vacas = vacas[1:(length(vacas)-vacas_a_vender_por_sobrecupo)]
+    
+  }
+  
+  vacas_vendidas = vacas_vendidas + vacas_a_vender + vacas_a_vender_por_sobrecupo
+  
+  
+  ##mortalidad por enfermedades
+  terneros_muertos = 0
+  for (i in 1:length(terneros)) {
+    if (runif(1) < mortalidad_ternero) {
+      terneros_muertos = terneros_muertos + 1
+      terneros = terneros[-i]
+    }
+  }
+  
+  novillos_muertos = 0
+  for (i in 1:length(terneros)) {
+    if (runif(1) < mortalidad_novillo) {
+      novillos_muertos = novillos_muertos + 1
+      novillos = novillos[-i]
+    }
+  }
+  
+  terneras_muertas = 0
+  for (i in 1:length(terneros)) {
+    if (runif(1) < terneras_muertas) {
+      terneras_muertas = terneras_muertas + 1
+      terneras = terneras[-i]
+    }
+  }
+  
+  novillas_muertas = 0
+  for (i in 1:length(terneros)) {
+    if (runif(1) < novillas_muertas) {
+      novillas_muertas = novillas_muertas + 1
+      novillas = novillas[-i]
+    }
+  }
+  
+  vacas_muertas = 0
+  for (i in 1:length(terneros)) {
+    if (runif(1) < vacas_muertas) {
+      vacas_muertas = vacas_muertas + 1
+      vacas = vacas[-i]
+    }
+  }
+  total_muertos = terneras_muertas + terneros_muertos + novillas_muertas + novillos_muertos + vacas_muertas
+  
+  
+  
   
   month = month + 1
   
@@ -209,6 +280,13 @@ repeat {
   output_vacas = c(output_vacas, length(vacas))
   output_terneros = c(output_terneros, length(terneros))
   output_novillos = c(output_novillos, length(novillos))
+  
+  output_total_muertos = c(output_total_muertos, total_muertos)
+  output_terneros_muertos = c(output_terneros_muertos, terneros_muertos)
+  output_terneras_muertas = c(output_terneras_muertas, terneras_muertas)
+  output_novillas_muertas = c(output_novillas_muertas, novillas_muertas)
+  output_novillos_muertos = c(output_novillos_muertos, novillos_muertos)
+  output_vacas_muertas = c(output_vacas_muertas, vacas_muertas)
   
   output_vacas_vendidas = c(output_vacas_vendidas, vacas_vendidas)
   output_novillos_vendidos = c(output_novillos_vendidos, novillos_vendidos)
@@ -221,14 +299,14 @@ repeat {
   
   output_metano = c(output_metano, metano_litros)
   
-  if(month == 200) {
+  if(month == months) {
     break;
   }
   
   
 }
 
-print(paste("meses", month))
+print(paste("meses", months))
 print(paste("total ", total))
 print(paste("terneras ", length(terneras)))
 print(paste("novillas ", length(novillas)))
@@ -238,7 +316,7 @@ print(paste("terneros ", length(terneros)))
 print(paste("novillos ", length(novillos)))
 print(paste("novillos vendidos: ", novillos_vendidos))
 
-all_cows = cbind(outout_total, output_terneras, output_novillas, output_vacas, output_terneros, output_novillos)
+all_cows = cbind(output_total, output_terneras, output_novillas, output_vacas, output_terneros, output_novillos)
 
 types_cows = cbind(output_terneras, output_novillas, output_vacas, output_terneros, output_novillos)
 
@@ -298,5 +376,10 @@ matplot(x, output_metano/1000, type = "l", col = c("brown"), lty = 1,
 legend("topleft", legend = c("metano"),
        col = c("brown"), lty = 1, lwd = 1)
 
-
+## all dead cows
+dead_cows = cbind(output_total_muertos, output_terneras_muertas, output_novillas_muertas, output_vacas_muertas, output_terneros_muertos, output_novillos_muertos)
+matplot(x, dead_cows, type = "l", col = c("red", "blue", "green", "orange", "gray", "black"), lty = 1,
+        xlab = "x", ylab = "Valor", main = "dead cows / meses")
+legend("topleft", legend = c("Total", "Terneras", "Novillas", "Vacas", "terneros", "novillos"),
+       col = c("red", "blue", "green", "orange", "gray", "black"), lty = 1, lwd = 1)
 ```
